@@ -1,0 +1,8 @@
+hetfo;jelzocsengo;07:30
+hetfo;jelzocsengo;08:40
+hetfo;jelzocsengo;09:10
+hetfo;jelzocsengo;11:25
+kedd;becsengo;08:45
+szerda;kicsengo;09:50
+csutortok;jelzocsengo;10:05
+pentek;kicsengo;11:30
