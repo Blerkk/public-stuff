@@ -1,4 +1,7 @@
 import sys
+import os
+mappa = os.path.dirname(os.path.abspath(__file__))
+config = os.path.join(mappa, 'config.txt')
 
 try:
     import Tkinter as tk
@@ -19,16 +22,16 @@ NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
 
 def vp_start_gui():
-    global val, w, root
+    global val, w, root, top
     root = tk.Tk()
     top = Toplevel1 (root)
+    beolvasas()
     csengetes_support.init(root, top)
     root.mainloop()
 
 w = None
 def create_Toplevel1(rt, *args, **kwargs):
-    global w, w_win, root
-    #rt = root
+    global w, w_win, root, top
     root = rt
     w = tk.Toplevel (root)
     top = Toplevel1 (w)
@@ -42,42 +45,76 @@ def destroy_Toplevel1():
 
 sorok = []
 def beolvasas():
-    with open('config.txt', 'r+') as f:
+    global top
+    with open(config, 'r+') as f:
         lines = [line.rstrip().split(';') for line in f]
-        
-        for i in range(len(lines)):
-            if(lines[i][0] == 'hetfo'):
-                #Scrolledlistbox1.insert(lines[i][2])
-                print(lines[i][2])
-
-beolvasas()
+        for i in range(0,len(lines)):
+            top.betolt(lines[i][0], lines[i][2])
+            print(lines[i][2])
 
 def szerkesztes():
     szerkeszt = tk.Tk()
-    szerkeszt.wm_title("Szerkesztes")
-    label = ttk.Label(szerkeszt, text='Ez itt a szerkesztes', font=NORM_FONT)
-    label.pack(side="top", fill="x", pady=10)
-    B1 = ttk.Button(szerkeszt, text="Tovabb", command = szerkeszt.destroy) ##command az lesz ami meghivja a kovetkezo elementet
-    B1.pack()
+    szerkeszt.wm_title("Letrehozas")
+    szerkeszt.geometry("220x100")
+    szerkeszt.minsize(120, 1)
+    szerkeszt.maxsize(3844, 1061)
+    szerkeszt.resizable(1, 1)
+    Label1 = tk.Label(szerkeszt)
+    Label1.place(relx=0.273, rely=0.15, height=23, width=104)
+    Label1.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Nap kivalasztasa')
+
+    Spinbox1 = tk.Spinbox(szerkeszt, from_=1, to=31)
+    Spinbox1.place(relx=0.355, rely=0.513, relheight=0.162, relwidth=0.159)
+    Spinbox1.configure(activebackground="#f9f9f9", background="white", buttonbackground="#d9d9d9", disabledforeground="#a3a3a3", font="TkDefaultFont", foreground="black",
+                        highlightbackground="black", highlightcolor="black", insertbackground="black", selectbackground="blue", selectforeground="white")
+
+    Spinbox1_2 = tk.Spinbox(szerkeszt, from_=1.0, to=100.0)
+    Spinbox1_2.place(relx=0.505, rely=0.513, relheight=0.16292, relwidth=0.159)
+    Spinbox1_2.configure(activebackground="#f9f9f9", background="white", buttonbackground="#d9d9d9", disabledforeground="#a3a3a3", font="TkDefaultFont", foreground="black",
+                         highlightbackground="black", highlightcolor="black", insertbackground="black", selectbackground="blue", selectforeground="white")
+    
+    def lekeres():
+        ora = "00"
+        perc = "00"
+        if(int(Spinbox1.get()) < 10):
+            ora = "0" + str(Spinbox1.get())
+        else:
+            ora = str(Spinbox1.get())
+        if(int(Spinbox1_2.get()) < 10):
+            perc = "0" + str(Spinbox1_2.get())
+        else:
+            perc = str(Spinbox1_2.get())
+        ujErt= ora + ":" + perc
+        print(ujErt)
+
+    Button1 = tk.Button(szerkeszt, command = szerkesztesInditas)
+    Button1.place(relx=0.364, rely=0.769, height=24, width=65)
+    Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
+                     highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Kovetkezo')
     szerkeszt.mainloop()
 
 def letrehozas():
-    letrehoz = tk.Tk()
-    letrehoz.wm_title("Letrehozas")
-    label = ttk.Label(letrehoz, text='Ez itt a letrehozas', font=NORM_FONT)
-    label.pack(side="top", fill="x", pady=10)
-    B1 = ttk.Button(letrehoz, text="Tovabb", command = letrehoz.destroy) ##command az lesz ami meghivja a kovetkezo elementet
-    B1.pack()
-    letrehoz.mainloop()
+    letrehozNap = tk.Tk()
+    letrehozNap.wm_title("Letrehozas")
+    letrehozNap.geometry("220x100")
+    letrehozNap.minsize(120, 1)
+    letrehozNap.maxsize(3844, 1061)
+    letrehozNap.resizable(1, 1)
+    Label1 = tk.Label(letrehozNap)
+    Label1.place(relx=0.273, rely=0.15, height=23, width=104)
+    Label1.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Nap kivalasztasa')
 
-def torles():
-    torol = tk.Tk()
-    torol.wm_title("Torles")
-    label = ttk.Label(torol, text='Ez itt a torles', font=NORM_FONT)
-    label.pack(side="top", fill="x", pady=10)
-    B1 = ttk.Button(torol, text="Tovabb", command = torol.destroy) ##command az lesz ami meghivja a kovetkezo elementet
-    B1.pack()
-    torol.mainloop()
+    comboNapok = ['Hetfo', 'Kedd', 'Szerda', 'Csutortok', 'Pentek']
+    TCombobox1 = ttk.Combobox(letrehozNap, values=comboNapok, state='readonly')
+    TCombobox1.set('Hetfo')
+    TCombobox1.place(relx=0.182, rely=0.5, relheight=0.2188, relwidth=0.65)
+    print(TCombobox1.get())
+
+    Button1 = tk.Button(letrehozNap, command = letrehozNap.destroy)
+    Button1.place(relx=0.364, rely=0.769, height=24, width=65)
+    Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", highlightbackground="#d9d9d9",
+                     highlightcolor="black", pady="0", text='Kovetkezo')
+    letrehozNap.mainloop()
 
 class Toplevel1:
     def __init__(self, top=None):
@@ -93,9 +130,7 @@ class Toplevel1:
         self.style.configure('.',background=_bgcolor)
         self.style.configure('.',foreground=_fgcolor)
         self.style.configure('.',font="TkDefaultFont")
-        self.style.map('.',background=
-            [('selected', _compcolor), ('active',_ana2color)])
-
+        self.style.map('.',background=[('selected', _compcolor), ('active',_ana2color)])
         
         self.menubar = tk.Menu(top,font="TkMenuFont",bg=_bgcolor,fg=_fgcolor)
         top.configure(menu = self.menubar)
@@ -114,41 +149,20 @@ class Toplevel1:
         top.title("Csengetes")
         top.configure(background="#d9d9d9")
 
-        self.Button1 = tk.Button(top, command=szerkesztes)
+        self.Button1 = tk.Button(top, command=letrehozas)
         self.Button1.place(relx=0.837, rely=0.318, height=24, width=67)
-        self.Button1.configure(activebackground="#ececec")
-        self.Button1.configure(activeforeground="#000000")
-        self.Button1.configure(background="#d9d9d9")
-        self.Button1.configure(disabledforeground="#a3a3a3")
-        self.Button1.configure(foreground="#000000")
-        self.Button1.configure(highlightbackground="#d9d9d9")
-        self.Button1.configure(highlightcolor="black")
-        self.Button1.configure(pady="0")
-        self.Button1.configure(text='Szerkesztes')
+        self.Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
+                                highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Szerkesztes')
 
         self.Button2 = tk.Button(top, command=letrehozas)
         self.Button2.place(relx=0.837, rely=0.451, height=24, width=67)
-        self.Button2.configure(activebackground="#ececec")
-        self.Button2.configure(activeforeground="#000000")
-        self.Button2.configure(background="#d9d9d9")
-        self.Button2.configure(disabledforeground="#a3a3a3")
-        self.Button2.configure(foreground="#000000")
-        self.Button2.configure(highlightbackground="#d9d9d9")
-        self.Button2.configure(highlightcolor="black")
-        self.Button2.configure(pady="0")
-        self.Button2.configure(text='Letrehozas')
+        self.Button2.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000",
+                                highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Letrehozas')
 
-        self.Button3 = tk.Button(top, command=torles)
+        self.Button3 = tk.Button(top, command=self.kivalTorol)
         self.Button3.place(relx=0.837, rely=0.584, height=24, width=67)
-        self.Button3.configure(activebackground="#ececec")
-        self.Button3.configure(activeforeground="#000000")
-        self.Button3.configure(background="#d9d9d9")
-        self.Button3.configure(disabledforeground="#a3a3a3")
-        self.Button3.configure(foreground="#000000")
-        self.Button3.configure(highlightbackground="#d9d9d9")
-        self.Button3.configure(highlightcolor="black")
-        self.Button3.configure(pady="0")
-        self.Button3.configure(text='Torles')
+        self.Button3.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000",
+                                highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Torles')
 
         self.TSeparator1 = ttk.Separator(top)
         self.TSeparator1.place(relx=0.788, rely=0.265, relheight=0.443)
@@ -159,111 +173,70 @@ class Toplevel1:
 
         self.Label1 = tk.Label(top)
         self.Label1.place(relx=0.055, rely=0.053, height=18, width=65)
-        self.Label1.configure(background="#d9d9d9")
-        self.Label1.configure(disabledforeground="#a3a3a3")
-        self.Label1.configure(foreground="#000000")
-        self.Label1.configure(text='Hetfo')
+        self.Label1.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Hetfo')
 
         self.Label2 = tk.Label(top)
         self.Label2.place(relx=0.205, rely=0.053, height=18, width=64)
-        self.Label2.configure(background="#d9d9d9")
-        self.Label2.configure(disabledforeground="#a3a3a3")
-        self.Label2.configure(foreground="#000000")
-        self.Label2.configure(text='Kedd')
+        self.Label2.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Kedd')
 
         self.Label3 = tk.Label(top)
         self.Label3.place(relx=0.360, rely=0.053, height=18, width=54)
-        self.Label3.configure(background="#d9d9d9")
-        self.Label3.configure(disabledforeground="#a3a3a3")
-        self.Label3.configure(foreground="#000000")
-        self.Label3.configure(text='Szerda')
+        self.Label3.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Szerda')
 
         self.Label4 = tk.Label(top)
         self.Label4.place(relx=0.505, rely=0.053, height=18, width=63)
-        self.Label4.configure(background="#d9d9d9")
-        self.Label4.configure(disabledforeground="#a3a3a3")
-        self.Label4.configure(foreground="#000000")
-        self.Label4.configure(text='Csutortok')
+        self.Label4.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Csutortok')
 
         self.Label5 = tk.Label(top)
         self.Label5.place(relx=0.650, rely=0.053, height=18, width=61)
-        self.Label5.configure(background="#d9d9d9")
-        self.Label5.configure(disabledforeground="#a3a3a3")
-        self.Label5.configure(foreground="#000000")
-        self.Label5.configure(text='Pentek')
+        self.Label5.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Pentek')
 
         self.Scrolledlistbox1 = ScrolledListBox(top)
-        #self.Scrolledlistbox1.insert(lines[i][2])
-        self.Scrolledlistbox1.place(relx=0.049, rely=0.159, relheight=0.743
-                , relwidth=0.125)
-        self.Scrolledlistbox1.configure(background="white")
-        self.Scrolledlistbox1.configure(cursor="xterm")
-        self.Scrolledlistbox1.configure(disabledforeground="#a3a3a3")
-        self.Scrolledlistbox1.configure(font="TkFixedFont")
-        self.Scrolledlistbox1.configure(foreground="black")
-        self.Scrolledlistbox1.configure(highlightbackground="#d9d9d9")
-        self.Scrolledlistbox1.configure(highlightcolor="#d9d9d9")
-        self.Scrolledlistbox1.configure(selectbackground="blue")
-        self.Scrolledlistbox1.configure(selectforeground="white")
+        self.Scrolledlistbox1.place(relx=0.049, rely=0.159, relheight=0.743, relwidth=0.125)
+        self.Scrolledlistbox1.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
+                                        highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
         self.Scrolledlistbox2 = ScrolledListBox(top)
-        self.Scrolledlistbox2.place(relx=0.197, rely=0.159, relheight=0.743
-                , relwidth=0.123)
-        self.Scrolledlistbox2.configure(background="white")
-        self.Scrolledlistbox2.configure(cursor="xterm")
-        self.Scrolledlistbox2.configure(disabledforeground="#a3a3a3")
-        self.Scrolledlistbox2.configure(font="TkFixedFont")
-        self.Scrolledlistbox2.configure(foreground="black")
-        self.Scrolledlistbox2.configure(highlightbackground="#d9d9d9")
-        self.Scrolledlistbox2.configure(highlightcolor="#d9d9d9")
-        self.Scrolledlistbox2.configure(selectbackground="blue")
-        self.Scrolledlistbox2.configure(selectforeground="white")
+        self.Scrolledlistbox2.place(relx=0.197, rely=0.159, relheight=0.743, relwidth=0.123)
+        self.Scrolledlistbox2.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
+                                        highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
         self.Scrolledlistbox3 = ScrolledListBox(top)
-        self.Scrolledlistbox3.place(relx=0.345, rely=0.159, relheight=0.743
-                , relwidth=0.123)
-        self.Scrolledlistbox3.configure(background="white")
-        self.Scrolledlistbox3.configure(cursor="xterm")
-        self.Scrolledlistbox3.configure(disabledforeground="#a3a3a3")
-        self.Scrolledlistbox3.configure(font="TkFixedFont")
-        self.Scrolledlistbox3.configure(foreground="black")
-        self.Scrolledlistbox3.configure(highlightbackground="#d9d9d9")
-        self.Scrolledlistbox3.configure(highlightcolor="#d9d9d9")
-        self.Scrolledlistbox3.configure(selectbackground="blue")
-        self.Scrolledlistbox3.configure(selectforeground="white")
+        self.Scrolledlistbox3.place(relx=0.345, rely=0.159, relheight=0.743, relwidth=0.123)
+        self.Scrolledlistbox3.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
+                                        highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
         self.Scrolledlistbox4 = ScrolledListBox(top)
-        self.Scrolledlistbox4.place(relx=0.493, rely=0.159, relheight=0.743
-                , relwidth=0.125)
-        self.Scrolledlistbox4.configure(background="white")
-        self.Scrolledlistbox4.configure(cursor="xterm")
-        self.Scrolledlistbox4.configure(disabledforeground="#a3a3a3")
-        self.Scrolledlistbox4.configure(font="TkFixedFont")
-        self.Scrolledlistbox4.configure(foreground="black")
-        self.Scrolledlistbox4.configure(highlightbackground="#d9d9d9")
-        self.Scrolledlistbox4.configure(highlightcolor="#d9d9d9")
-        self.Scrolledlistbox4.configure(selectbackground="blue")
-        self.Scrolledlistbox4.configure(selectforeground="white")
+        self.Scrolledlistbox4.place(relx=0.493, rely=0.159, relheight=0.743, relwidth=0.125)
+        self.Scrolledlistbox4.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
+                                        highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
         self.Scrolledlistbox5 = ScrolledListBox(top)
-        self.Scrolledlistbox5.place(relx=0.64, rely=0.159, relheight=0.743
-                , relwidth=0.123)
-        self.Scrolledlistbox5.configure(background="white")
-        self.Scrolledlistbox5.configure(cursor="xterm")
-        self.Scrolledlistbox5.configure(disabledforeground="#a3a3a3")
-        self.Scrolledlistbox5.configure(font="TkFixedFont")
-        self.Scrolledlistbox5.configure(foreground="black")
-        self.Scrolledlistbox5.configure(highlightbackground="#d9d9d9")
-        self.Scrolledlistbox5.configure(highlightcolor="#d9d9d9")
-        self.Scrolledlistbox5.configure(selectbackground="blue")
-        self.Scrolledlistbox5.configure(selectforeground="white")
+        self.Scrolledlistbox5.place(relx=0.64, rely=0.159, relheight=0.743, relwidth=0.123)
+        self.Scrolledlistbox5.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
+                                        highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
-# The following code is added to facilitate the Scrolled widgets you specified.
+    def betolt(self, nap, ora):
+        if(nap == 'hetfo'):
+            self.Scrolledlistbox1.insert(tk.END, ora)
+        elif(nap == 'kedd'):
+            self.Scrolledlistbox2.insert(tk.END, ora)
+        elif(nap == 'szerda'):
+            self.Scrolledlistbox3.insert(tk.END, ora)
+        elif(nap == 'csutortok'):
+            self.Scrolledlistbox4.insert(tk.END, ora)
+        elif(nap == 'pentek'):
+            self.Scrolledlistbox5.insert(tk.END, ora)
+
+    def kivalTorol(self):
+        self.Scrolledlistbox1.delete(tk.ANCHOR)
+        self.Scrolledlistbox2.delete(tk.ANCHOR)
+        self.Scrolledlistbox3.delete(tk.ANCHOR)
+        self.Scrolledlistbox4.delete(tk.ANCHOR)
+        self.Scrolledlistbox5.delete(tk.ANCHOR)
+
 class AutoScroll(object):
     def __init__(self, master):
-        #  Rozen. Added the try-except clauses so that this class
-        #  could be used for scrolled entry widget for which vertical
-        #  scrolling is not supported. 5/7/14.
         try:
             vsb = ttk.Scrollbar(master, orient='vertical', command=self.yview)
         except:
@@ -282,7 +255,6 @@ class AutoScroll(object):
         hsb.grid(column=0, row=1, sticky='ew')
         master.grid_columnconfigure(0, weight=1)
         master.grid_rowconfigure(0, weight=1)
-        # Copy geometry methods of master  (taken from ScrolledText.py)
         if py3:
             methods = tk.Pack.__dict__.keys() | tk.Grid.__dict__.keys() \
                     | tk.Place.__dict__.keys()
