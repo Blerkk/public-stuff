@@ -1,55 +1,58 @@
-import tkinter as tk                # python 3
-from tkinter import font as tkfont  # python 3
+import tkinter as tk
 
-class SampleApp(tk.Tk):
+class Page(tk.Frame):
     def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        tk.Frame.__init__(self, *args, **kwargs)
+    def show(self):
+        self.lift()
+
+class Page1(Page):
+   def __init__(self, *args, **kwargs):
+       Page.__init__(self, *args, **kwargs)
+       label = tk.Label(self, text="This is page 1")
+       label.pack(side="top", fill="both", expand=True)
+
+class Page2(Page):
+   def __init__(self, *args, **kwargs):
+       Page.__init__(self, *args, **kwargs)
+       label = tk.Label(self, text="This is page 2")
+       label.pack(side="top", fill="both", expand=True)
+
+class Page3(Page):
+   def __init__(self, *args, **kwargs):
+       Page.__init__(self, *args, **kwargs)
+       label = tk.Label(self, text="This is page 3")
+       label.pack(side="top", fill="both", expand=True)
+
+class MainView(tk.Frame):
+    def __init__(self, *args, **kwargs):
+        tk.Frame.__init__(self, *args, **kwargs)
+        p1 = Page1(self)
+        p2 = Page2(self)
+        p3 = Page3(self)
+
+        buttonframe = tk.Frame(self)
         container = tk.Frame(self)
+        buttonframe.pack(side="top", fill="x", expand=False)
         container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
 
-        self.frames = {}
-        for F in (StartPage, PageOne, PageTwo):
-            page_name = F.__name__
-            frame = F(parent=container, controller=self)
-            self.frames[page_name] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
-        self.show_frame("StartPage")
-    def show_frame(self, page_name):
-        frame = self.frames[page_name]
-        frame.tkraise()
+        p1.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p2.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
+        p3.place(in_=container, x=0, y=0, relwidth=1, relheight=1)
 
-class StartPage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        label = tk.Label(self, text="This is the start page", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
-        button1 = tk.Button(self, text="Go to Page One", command=lambda: controller.show_frame("PageOne"))
-        button2 = tk.Button(self, text="Go to Page Two", command=lambda: controller.show_frame("PageTwo"))
-        button1.pack()
-        button2.pack()
+        b1 = tk.Button(buttonframe, text="Page 1", command=p1.lift)
+        b2 = tk.Button(buttonframe, text="Page 2", command=p2.lift)
+        b3 = tk.Button(buttonframe, text="Page 3", command=p3.lift)
 
-class PageOne(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        label = tk.Label(self, text="This is page 1", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
-        button = tk.Button(self, text="Go to the start page", command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        b1.pack(side="left")
+        b2.pack(side="left")
+        b3.pack(side="left")
 
-class PageTwo(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        label = tk.Label(self, text="This is page 2", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
-        button = tk.Button(self, text="Go to the start page", command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        p1.show()
 
 if __name__ == "__main__":
-    app = SampleApp()
-    app.mainloop()
+    root = tk.Tk()
+    main = MainView(root)
+    main.pack(side="top", fill="both", expand=True)
+    root.wm_geometry("400x400")
+    root.mainloop()

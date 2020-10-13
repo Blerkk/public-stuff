@@ -49,8 +49,7 @@ def beolvasas():
     with open(config, 'r+') as f:
         lines = [line.rstrip().split(';') for line in f]
         for i in range(0,len(lines)):
-            top.betolt(lines[i][0], lines[i][2])
-            print(lines[i][2])
+            top.betolt(lines[i][0], lines[i][2], lines[i][1])
 
 def szerkesztes():
     szerkeszt = tk.Tk()
@@ -87,7 +86,7 @@ def szerkesztes():
         ujErt= ora + ":" + perc
         print(ujErt)
 
-    Button1 = tk.Button(szerkeszt, command = szerkesztesInditas)
+    Button1 = tk.Button(szerkeszt, command = lekeres)
     Button1.place(relx=0.364, rely=0.769, height=24, width=65)
     Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
                      highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Kovetkezo')
@@ -142,7 +141,7 @@ class Toplevel1:
         self.cascadeMenu.add_separator()
         self.cascadeMenu.add_command(label="Kilepes", command=top.quit)
 
-        top.geometry("609x377")
+        top.geometry("750x500")
         top.minsize(120, 1)
         top.maxsize(3844, 1061)
         top.resizable(1, 1)
@@ -216,17 +215,27 @@ class Toplevel1:
         self.Scrolledlistbox5.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
                                         highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
-    def betolt(self, nap, ora):
+    def betolt(self, nap, ora, tipus):
         if(nap == 'hetfo'):
+            self.Scrolledlistbox1.insert(tk.END, tipus)
             self.Scrolledlistbox1.insert(tk.END, ora)
+            self.Scrolledlistbox1.insert(tk.END, " ")
         elif(nap == 'kedd'):
+            self.Scrolledlistbox2.insert(tk.END, tipus)
             self.Scrolledlistbox2.insert(tk.END, ora)
+            self.Scrolledlistbox2.insert(tk.END, " ")
         elif(nap == 'szerda'):
+            self.Scrolledlistbox3.insert(tk.END, tipus)
             self.Scrolledlistbox3.insert(tk.END, ora)
+            self.Scrolledlistbox3.insert(tk.END, " ")
         elif(nap == 'csutortok'):
+            self.Scrolledlistbox4.insert(tk.END, tipus)
             self.Scrolledlistbox4.insert(tk.END, ora)
+            self.Scrolledlistbox4.insert(tk.END, " ")
         elif(nap == 'pentek'):
+            self.Scrolledlistbox5.insert(tk.END, tipus)
             self.Scrolledlistbox5.insert(tk.END, ora)
+            self.Scrolledlistbox5.insert(tk.END, " ")
 
     def kivalTorol(self):
         self.Scrolledlistbox1.delete(tk.ANCHOR)
