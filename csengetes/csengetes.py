@@ -1,5 +1,7 @@
 import sys
 import os
+import threading
+from time import *
 mappa = os.path.dirname(os.path.abspath(__file__))
 config = os.path.join(mappa, 'config.txt')
 
@@ -20,6 +22,54 @@ import csengetes_support
 LARGE_FONT= ("Verdana", 12)
 NORM_FONT= ("Verdana", 10)
 SMALL_FONT= ("Verdana", 8)
+
+kicsengo = 11
+becsengo = 12
+jelzocsengo = 13
+pontosIdo = ""
+maiNap = ""
+hetfo = "Monday"
+kedd = "Tuesday"
+szerda = "Wednesday"
+csutortok = "Thursday"
+pentek = "Friday"
+newNapok = [hetfo, kedd, szerda, csutortok, pentek] 
+
+class Napok:
+    nap = maiNap
+
+napok = [Napok() for i in range(5)]
+napok[0].nap = hetfo
+napok[1].nap = kedd
+napok[2].nap = szerda
+napok[3].nap = csutortok
+napok[4].nap = pentek
+
+def idoUpdate():
+    global pontosIdo
+    global maiNap
+    pontosIdo = strftime('%H:%M')
+    maiNap = strftime('%A')
+
+def csengetesValasztas(nap, action, mikor): #(nap, (kicsengo, becsengo, jelzocsengo), 'idopont' )
+    global pontosIdo
+    global maiNap
+    global newAction
+    global newMikor
+    global newNap
+    newAction = action
+    newMikor = mikor
+    newNap = nap
+
+    for i in range(5):
+        if(maiNap in napok[i].nap):
+            if(newNap == maiNap):
+                if(newMikor == str(pontosIdo)):
+                    #GPIO.output(action, GPIO.HIGH)
+                    print('\nMost kapcsol BE a csengo a {} pin-en.'.format(newAction))
+                    sleep(3)
+                    #GPIO.output(action, GPIO.LOW)
+                    print('\nMost kapcsol KI a csengo {} pin-en.'.format(newAction))
 
 def vp_start_gui():
     global val, w, root, top
@@ -46,7 +96,7 @@ def destroy_Toplevel1():
 sorok = []
 def beolvasas():
     global top
-    with open(config, 'r+') as f:
+    with open(config, 'r') as f:
         lines = [line.rstrip().split(';') for line in f]
         for i in range(0,len(lines)):
             top.betolt(lines[i][0], lines[i][2], lines[i][1])
@@ -84,7 +134,6 @@ def szerkesztes():
         else:
             perc = str(Spinbox1_2.get())
         ujErt= ora + ":" + perc
-        print(ujErt)
 
     Button1 = tk.Button(szerkeszt, command = lekeres)
     Button1.place(relx=0.364, rely=0.769, height=24, width=65)
@@ -95,24 +144,84 @@ def szerkesztes():
 def letrehozas():
     letrehozNap = tk.Tk()
     letrehozNap.wm_title("Letrehozas")
-    letrehozNap.geometry("220x100")
+    letrehozNap.geometry("210x260")
     letrehozNap.minsize(120, 1)
     letrehozNap.maxsize(3844, 1061)
     letrehozNap.resizable(1, 1)
+
+    def lekeres():
+        ora = "00"
+        perc = "00"
+        if(int(Spinbox1.get()) < 10):
+            ora = "0" + str(Spinbox1.get())
+        else:
+            ora = str(Spinbox1.get())
+        if(int(Spinbox2.get()) < 10):
+            perc = "0" + str(Spinbox2.get())
+        else:
+            perc = str(Spinbox2.get())
+
+        ujErt= ora + ":" + perc
+        nap = TCombobox1.get()
+        tipus = ""
+        if(TCombobox2.get() == 'jelzocsengo'):
+            tipus = "jcs"
+        elif(TCombobox2.get() == 'becsengo'):
+            tipus = "bcs"
+        elif(TCombobox2.get() == 'kicsengo'):
+            tipus = "kcs"
+
+        fileBa = "\n" + nap + ";" + tipus + ";" + ujErt
+        top.letrehozBetolt(nap, ujErt, tipus)
+
+        with open(config, 'a') as f:
+            f.writelines(fileBa)
+
+        letrehozNap.destroy()
+
+
     Label1 = tk.Label(letrehozNap)
-    Label1.place(relx=0.273, rely=0.15, height=23, width=104)
+    Label1.place(relx=0.295, rely=0.035, height=14, width=86)
     Label1.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Nap kivalasztasa')
 
     comboNapok = ['Hetfo', 'Kedd', 'Szerda', 'Csutortok', 'Pentek']
+    comboTipusok = ['jelzocsengo', 'becsengo', 'kicsengo']
     TCombobox1 = ttk.Combobox(letrehozNap, values=comboNapok, state='readonly')
     TCombobox1.set('Hetfo')
-    TCombobox1.place(relx=0.182, rely=0.5, relheight=0.2188, relwidth=0.65)
-    print(TCombobox1.get())
+    TCombobox1.place(relx=0.19, rely=0.125, relheight=0.1, relwidth=0.59)
 
-    Button1 = tk.Button(letrehozNap, command = letrehozNap.destroy)
-    Button1.place(relx=0.364, rely=0.769, height=24, width=65)
+    Label2 = tk.Label(letrehozNap)
+    Label2.place(relx=0.271, rely=0.275, height=14, width=101)
+    Label2.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text="Idopont (ora, perc)")
+
+    Spinbox1 = tk.Spinbox(letrehozNap, from_=1, to=23)
+    Spinbox1.place(relx=0.333, rely=0.375, relheight=0.075, relwidth=0.157)
+    Spinbox1.configure(activebackground="#f9f9f9", background="white", buttonbackground="#d9d9d9", disabledforeground="#a3a3a3", font="TkDefaultFont", foreground="black", 
+                    highlightbackground="black", highlightcolor="black", insertbackground="black", selectbackground="blue", selectforeground="white")
+
+    Spinbox2 = tk.Spinbox(letrehozNap, from_=1, to=59)
+    Spinbox2.place(relx=0.524, rely=0.375, relheight=0.075, relwidth=0.157)
+    Spinbox2.configure(activebackground="#f9f9f9", background="white", buttonbackground="#d9d9d9", disabledforeground="#a3a3a3", font="TkDefaultFont", foreground="black", 
+                    highlightbackground="black", highlightcolor="black", insertbackground="black", selectbackground="blue", selectforeground="white")
+
+    Label3 = tk.Label(letrehozNap)
+    Label3.place(relx=0.320, rely=0.5, height=14, width=67)
+    Label3.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text="Jelzes tipusa")
+
+    TCombobox2 = ttk.Combobox(letrehozNap, values=comboTipusok, state='readonly')
+    TCombobox2.set('jelzocsengo')
+    TCombobox2.place(relx=0.181, rely=0.6, relheight=0.1, relwidth=0.59)
+
+    Button1 = tk.Button(letrehozNap, command = lekeres)
+    Button1.place(relx=0.350, rely=0.730, height=24, width=65)
     Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", highlightbackground="#d9d9d9",
-                     highlightcolor="black", pady="0", text='Kovetkezo')
+                     highlightcolor="black", pady="0", text='Ok')
+    
+    Button2 = tk.Button(letrehozNap, command = letrehozNap.destroy)
+    Button2.place(relx=0.350, rely=0.860, height=24, width=65)
+    Button2.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", highlightbackground="#d9d9d9",
+                     highlightcolor="black", pady="0", text='Megse')
+
     letrehozNap.mainloop()
 
 class Toplevel1:
@@ -148,7 +257,7 @@ class Toplevel1:
         top.title("Csengetes")
         top.configure(background="#d9d9d9")
 
-        self.Button1 = tk.Button(top, command=letrehozas)
+        self.Button1 = tk.Button(top, command=szerkesztes)
         self.Button1.place(relx=0.837, rely=0.318, height=24, width=67)
         self.Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
                                 highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Szerkesztes')
@@ -171,27 +280,27 @@ class Toplevel1:
         self.TSeparator2.place(relx=0.050, rely=0.133, relwidth=0.716)
 
         self.Label1 = tk.Label(top)
-        self.Label1.place(relx=0.055, rely=0.053, height=18, width=65)
+        self.Label1.place(relx=0.060, rely=0.053, height=18, width=65)
         self.Label1.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Hetfo')
 
         self.Label2 = tk.Label(top)
-        self.Label2.place(relx=0.205, rely=0.053, height=18, width=64)
+        self.Label2.place(relx=0.210, rely=0.053, height=18, width=64)
         self.Label2.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Kedd')
 
         self.Label3 = tk.Label(top)
-        self.Label3.place(relx=0.360, rely=0.053, height=18, width=54)
+        self.Label3.place(relx=0.365, rely=0.053, height=18, width=54)
         self.Label3.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Szerda')
 
         self.Label4 = tk.Label(top)
-        self.Label4.place(relx=0.505, rely=0.053, height=18, width=63)
+        self.Label4.place(relx=0.510, rely=0.053, height=18, width=63)
         self.Label4.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Csutortok')
 
         self.Label5 = tk.Label(top)
-        self.Label5.place(relx=0.650, rely=0.053, height=18, width=61)
+        self.Label5.place(relx=0.655, rely=0.053, height=18, width=61)
         self.Label5.configure(background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", text='Pentek')
 
         self.Scrolledlistbox1 = ScrolledListBox(top)
-        self.Scrolledlistbox1.place(relx=0.049, rely=0.159, relheight=0.743, relwidth=0.125)
+        self.Scrolledlistbox1.place(relx=0.049, rely=0.159, relheight=0.743, relwidth=0.123)
         self.Scrolledlistbox1.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
                                         highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
@@ -206,7 +315,7 @@ class Toplevel1:
                                         highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
         self.Scrolledlistbox4 = ScrolledListBox(top)
-        self.Scrolledlistbox4.place(relx=0.493, rely=0.159, relheight=0.743, relwidth=0.125)
+        self.Scrolledlistbox4.place(relx=0.493, rely=0.159, relheight=0.743, relwidth=0.123)
         self.Scrolledlistbox4.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
                                         highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
@@ -215,27 +324,39 @@ class Toplevel1:
         self.Scrolledlistbox5.configure(background="white", cursor="xterm", disabledforeground="#a3a3a3", font="TkFixedFont", foreground="black", highlightbackground="#d9d9d9",
                                         highlightcolor="#d9d9d9", selectbackground="blue", selectforeground="white")
 
+    def letrehozBetolt(self, napB, oraB, tipusB):
+        if(napB == 'Hetfo'):
+            ertekHB = tipusB + " " + oraB
+            self.Scrolledlistbox1.insert(tk.END, ertekHB)
+        elif(napB == 'Kedd'):
+            ertekKB = tipusB + " " + oraB
+            self.Scrolledlistbox2.insert(tk.END, ertekKB)
+        elif(napB == 'Szerda'):
+            ertekSzB = tipusB + " " + oraB
+            self.Scrolledlistbox3.insert(tk.END, ertekSzB)
+        elif(napB == 'Csutortok'):
+            ertekCsB = tipusB + " " + oraB
+            self.Scrolledlistbox4.insert(tk.END, ertekCsB)
+        elif(napB == 'Pentek'):
+            ertekPB = tipusB + " " + oraB
+            self.Scrolledlistbox5.insert(tk.END, ertekPB)
+
     def betolt(self, nap, ora, tipus):
-        if(nap == 'hetfo'):
-            self.Scrolledlistbox1.insert(tk.END, tipus)
-            self.Scrolledlistbox1.insert(tk.END, ora)
-            self.Scrolledlistbox1.insert(tk.END, " ")
-        elif(nap == 'kedd'):
-            self.Scrolledlistbox2.insert(tk.END, tipus)
-            self.Scrolledlistbox2.insert(tk.END, ora)
-            self.Scrolledlistbox2.insert(tk.END, " ")
-        elif(nap == 'szerda'):
-            self.Scrolledlistbox3.insert(tk.END, tipus)
-            self.Scrolledlistbox3.insert(tk.END, ora)
-            self.Scrolledlistbox3.insert(tk.END, " ")
-        elif(nap == 'csutortok'):
-            self.Scrolledlistbox4.insert(tk.END, tipus)
-            self.Scrolledlistbox4.insert(tk.END, ora)
-            self.Scrolledlistbox4.insert(tk.END, " ")
-        elif(nap == 'pentek'):
-            self.Scrolledlistbox5.insert(tk.END, tipus)
-            self.Scrolledlistbox5.insert(tk.END, ora)
-            self.Scrolledlistbox5.insert(tk.END, " ")
+        if(nap == 'Hetfo'):
+            ertekH = tipus + " " + ora
+            self.Scrolledlistbox1.insert(tk.END, ertekH)
+        elif(nap == 'Kedd'):
+            ertekK = tipus + " " + ora
+            self.Scrolledlistbox2.insert(tk.END, ertekK)
+        elif(nap == 'Szerda'):
+            ertekSz = tipus + " " + ora
+            self.Scrolledlistbox3.insert(tk.END, ertekSz)
+        elif(nap == 'Csutortok'):
+            ertekCs = tipus + " " + ora
+            self.Scrolledlistbox4.insert(tk.END, ertekCs)
+        elif(nap == 'Pentek'):
+            erteP = tipus + " " + ora
+            self.Scrolledlistbox5.insert(tk.END, erteP)
 
     def kivalTorol(self):
         self.Scrolledlistbox1.delete(tk.ANCHOR)
@@ -349,5 +470,21 @@ def _on_shiftmouse(event, widget):
         elif event.num == 5:
             widget.xview_scroll(1, 'units')
 
-if __name__ == '__main__':
+def t1():
     vp_start_gui()
+
+def t2():
+    while True:
+        idoUpdate()
+
+try:
+    thread1 = threading.Thread(target=t1)
+    thread1.daemon = False
+    thread1.start()
+    print("A thread 1 elindult")
+    thread2 = threading.Thread(target=t2)
+    thread2.daemon = False
+    thread2.start()
+    print("A thread 2 elindult")
+except:
+    print("Thread eleg ritkasan(nem) indult el")
