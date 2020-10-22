@@ -5,9 +5,10 @@ Hetfo;jcs;11:25
 Kedd;bcs;08:45
 Szerda;bcs;09:50
 Csutortok;jcs;10:05
+Csutortok;kcs;12:15
 Pentek;kcs;11:30
 Szerda;jcs;10:12
-Hetfo;jcs;01:01
-Hetfo;jcs;01:01
 Kedd;bcs;08:15
-Hetfo;jcs;01:01
+Hetfo;bcs;11:12
+Szerda;bcs;18:13
+Szerda;bcs;18:40

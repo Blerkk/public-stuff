@@ -1,7 +1,21 @@
+#TODO
+#
+# Config file-bol torolni amit a tabalazatban torlok
+# Kivalasztott elem szerkesztese
+# Kivalasztott, szerkesztett elem szerkesztese cfg fileban is
+#
+# + cuccok, max ha fizetnek erte lol 
+#
+# Uj config file letrehozasa
+# Config file betoltese kivalasztassal
+# 
+
+
 import sys
 import os
 import threading
 from time import *
+#import RPi.GPIO as GPIO
 mappa = os.path.dirname(os.path.abspath(__file__))
 config = os.path.join(mappa, 'config.txt')
 
@@ -26,56 +40,25 @@ SMALL_FONT= ("Verdana", 8)
 kicsengo = 11
 becsengo = 12
 jelzocsengo = 13
-pontosIdo = ""
-maiNap = ""
-hetfo = "Monday"
-kedd = "Tuesday"
-szerda = "Wednesday"
-csutortok = "Thursday"
-pentek = "Friday"
-newNapok = [hetfo, kedd, szerda, csutortok, pentek] 
+pontosIdo = "";
+maiNap = "";
+hetfo = "Monday";
+kedd = "Tuesday";
+szerda = "Wednesday";
+csutortok = "Thursday";
+pentek = "Friday";
 
-class Napok:
-    nap = maiNap
-
-napok = [Napok() for i in range(5)]
-napok[0].nap = hetfo
-napok[1].nap = kedd
-napok[2].nap = szerda
-napok[3].nap = csutortok
-napok[4].nap = pentek
-
-def idoUpdate():
-    global pontosIdo
-    global maiNap
-    pontosIdo = strftime('%H:%M')
-    maiNap = strftime('%A')
-
-def csengetesValasztas(nap, action, mikor): #(nap, (kicsengo, becsengo, jelzocsengo), 'idopont' )
-    global pontosIdo
-    global maiNap
-    global newAction
-    global newMikor
-    global newNap
-    newAction = action
-    newMikor = mikor
-    newNap = nap
-
-    for i in range(5):
-        if(maiNap in napok[i].nap):
-            if(newNap == maiNap):
-                if(newMikor == str(pontosIdo)):
-                    #GPIO.output(action, GPIO.HIGH)
-                    print('\nMost kapcsol BE a csengo a {} pin-en.'.format(newAction))
-                    sleep(3)
-                    #GPIO.output(action, GPIO.LOW)
-                    print('\nMost kapcsol KI a csengo {} pin-en.'.format(newAction))
+#GPIO.setmode(GPIO.BOARD)
+#GPIO.setup(kicsengo, GPIO.OUT)
+#GPIO.setup(becsengo, GPIO.OUT)
+#GPIO.setup(jelzocsengo, GPIO.OUT)
 
 def vp_start_gui():
     global val, w, root, top
     root = tk.Tk()
     top = Toplevel1 (root)
     beolvasas()
+    threadingInditas()
     csengetes_support.init(root, top)
     root.mainloop()
 
@@ -93,13 +76,37 @@ def destroy_Toplevel1():
     w.destroy()
     w = None
 
-sorok = []
+def idoUpdate():
+    global pontosIdo
+    global maiNap
+    pontosIdo = strftime('%H:%M')
+    maiNap = strftime('%A')
+    if(maiNap == "Monday"):
+        maiNap = "Hetfo"
+    elif(maiNap == "Tuesday"):
+        maiNap = "Kedd"
+    elif(maiNap == "Wednesday"):
+        maiNap = "Szerda"
+    elif(maiNap == "Thursday"):
+        maiNap = "Csutortok"
+    elif(maiNap == "Friday"):
+        maiNap = "Pentek"
+
+    # print(maiNap + ", " + pontosIdo)
+
 def beolvasas():
     global top
     with open(config, 'r') as f:
         lines = [line.rstrip().split(';') for line in f]
         for i in range(0,len(lines)):
             top.betolt(lines[i][0], lines[i][2], lines[i][1])
+
+def csengetesThread():
+    global top
+    with open(config, 'r') as fa:
+        sorok = [sor.rstrip().split(';') for sor in fa]
+        for i in range(0,len(sorok)):
+            top.csengo(sorok[i][0], sorok[i][1], sorok[i][2])
 
 def szerkesztes():
     szerkeszt = tk.Tk()
@@ -365,6 +372,43 @@ class Toplevel1:
         self.Scrolledlistbox4.delete(tk.ANCHOR)
         self.Scrolledlistbox5.delete(tk.ANCHOR)
 
+    def csengo(self, nap, tipus, idopont):
+        global newNap
+        global newTipus
+        global newIdopont
+        global pontosIdo
+        global maiNap
+        global jelzocsengo
+        global becsengo
+        global kicsengo
+        newNap = nap
+        newTipus = tipus
+        newIdopont = idopont
+
+        if(maiNap == newNap):
+            if(newIdopont == str(pontosIdo)):
+                if(newTipus == "jcs"):
+                    #GPIO.output(jelzocsengo, GPIO.HIGH)
+                    print('\nMost kapcsol BE a csengo a {} pin-en.'.format(jelzocsengo))
+                    sleep(3)
+                    #GPIO.output(jelzocsengo, GPIO.LOW)
+                    print('\nMost kapcsol KI a csengo {} pin-en.'.format(jelzocsengo))
+                    sleep(60)
+                elif(newTipus == "bcs"):
+                    #GPIO.output(becsengo, GPIO.HIGH)
+                    print('\nMost kapcsol BE a csengo a {} pin-en.'.format(becsengo))
+                    sleep(3)
+                    #GPIO.output(becsengo, GPIO.LOW)
+                    print('\nMost kapcsol KI a csengo {} pin-en.'.format(becsengo))
+                    sleep(60)
+                elif(newTipus == "kcs"):
+                    #GPIO.output(kicsengo, GPIO.HIGH)
+                    print('\nMost kapcsol BE a csengo a {} pin-en.'.format(kicsengo))
+                    sleep(3)
+                    #GPIO.output(kicsengo, GPIO.LOW)
+                    print('\nMost kapcsol KI a csengo {} pin-en.'.format(kicsengo))
+                    sleep(60)
+
 class AutoScroll(object):
     def __init__(self, master):
         try:
@@ -470,21 +514,28 @@ def _on_shiftmouse(event, widget):
         elif event.num == 5:
             widget.xview_scroll(1, 'units')
 
-def t1():
-    vp_start_gui()
 
-def t2():
-    while True:
-        idoUpdate()
+def threadingInditas():
+    def t1():
+        while True:
+            idoUpdate()
 
-try:
-    thread1 = threading.Thread(target=t1)
-    thread1.daemon = False
-    thread1.start()
-    print("A thread 1 elindult")
-    thread2 = threading.Thread(target=t2)
-    thread2.daemon = False
-    thread2.start()
-    print("A thread 2 elindult")
-except:
-    print("Thread eleg ritkasan(nem) indult el")
+    def t2():
+        while True:
+            csengetesThread()
+
+    try:
+        thread1 = threading.Thread(target=t1)
+        thread1.daemon = False
+        thread1.start()
+        print("A thread 1 elindult")
+        thread2 = threading.Thread(target=t2)
+        thread2.daemon = False
+        thread2.start()
+        print("A thread 2 elindult")
+    except:
+        print("Thread eleg ritkasan(nem) indult el")
+
+
+vp_start_gui()
+
