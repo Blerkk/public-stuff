@@ -11,6 +11,8 @@
 # Uj config file letrehozasa
 # Config file betoltese kivalasztassal
 # 
+# Copyright for Bagdi Mate Oliver
+# De komolyan mondom
 
 
 import sys
