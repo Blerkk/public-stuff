@@ -1,6 +1,8 @@
 #TODO
 #
 # Config file-bol torolni amit a tabalazatban torlok
+# kesz
+
 # Kivalasztott elem szerkesztese
 # Kivalasztott, szerkesztett elem szerkesztese cfg fileban is
 #
@@ -15,6 +17,7 @@ import sys
 import os
 import threading
 from time import *
+from operator import itemgetter, attrgetter
 #import RPi.GPIO as GPIO
 mappa = os.path.dirname(os.path.abspath(__file__))
 config = os.path.join(mappa, 'config.txt')
@@ -48,6 +51,12 @@ szerda = "Wednesday";
 csutortok = "Thursday";
 pentek = "Friday";
 
+elsoKiv = ""
+masodikKiv = ""
+harmadikKiv = ""
+negyedikKiv = ""
+otodikKiv = ""
+
 #GPIO.setmode(GPIO.BOARD)
 #GPIO.setup(kicsengo, GPIO.OUT)
 #GPIO.setup(becsengo, GPIO.OUT)
@@ -57,6 +66,7 @@ def vp_start_gui():
     global val, w, root, top
     root = tk.Tk()
     top = Toplevel1 (root)
+    rendezes()
     beolvasas()
     threadingInditas()
     csengetes_support.init(root, top)
@@ -92,21 +102,40 @@ def idoUpdate():
     elif(maiNap == "Friday"):
         maiNap = "Pentek"
 
-    # print(maiNap + ", " + pontosIdo)
+def rendezes():
+    rendezve = list()
+    with open(config, 'r+') as f:
+        lines = [line.rstrip().split(';') for line in f]
+        for i in range(0,len(lines)):
+            x = lines[i][3]
+            y = x.split(":")
+            z = y[0]
+            q = y[1]
+            rendSor = lines[i][0] + ";" + lines[i][1] + ";" + lines[i][2] + ";" + z + ":" + q + "\n"
+            print(rendSor)
+            rendezve.append(rendSor)
+
+        #s = sorted(rendezve, key = itemgetter(0,4,5))
+        rendezett = sorted(rendezve, key = itemgetter(0))
+        print(rendezett)
+
+        f.seek(0)
+        f.truncate()
+        f.writelines(rendezett)
 
 def beolvasas():
     global top
     with open(config, 'r') as f:
         lines = [line.rstrip().split(';') for line in f]
         for i in range(0,len(lines)):
-            top.betolt(lines[i][0], lines[i][2], lines[i][1])
+            top.betolt(lines[i][1], lines[i][3], lines[i][2])
 
 def csengetesThread():
     global top
     with open(config, 'r') as fa:
         sorok = [sor.rstrip().split(';') for sor in fa]
         for i in range(0,len(sorok)):
-            top.csengo(sorok[i][0], sorok[i][1], sorok[i][2])
+            top.csengo(sorok[i][1], sorok[i][2], sorok[i][3])
 
 def szerkesztes():
     szerkeszt = tk.Tk()
@@ -170,6 +199,7 @@ def letrehozas():
 
         ujErt= ora + ":" + perc
         nap = TCombobox1.get()
+        ID = ""
         tipus = ""
         if(TCombobox2.get() == 'jelzocsengo'):
             tipus = "jcs"
@@ -178,7 +208,18 @@ def letrehozas():
         elif(TCombobox2.get() == 'kicsengo'):
             tipus = "kcs"
 
-        fileBa = "\n" + nap + ";" + tipus + ";" + ujErt
+        if(nap == 'Hetfo'):
+            ID = "1"
+        elif(nap == 'Kedd'):
+            ID = "2"
+        elif(nap == 'Szerda'):
+            ID = "3"
+        elif(nap == 'Csutortok'):
+            ID = "4"
+        elif(nap == 'Pentek'):
+            ID = "5"
+
+        fileBa = "\n" + ID + ";" + nap + ";" + tipus + ";" + ujErt
         top.letrehozBetolt(nap, ujErt, tipus)
 
         with open(config, 'a') as f:
@@ -253,7 +294,7 @@ class Toplevel1:
         self.menubar.add_cascade(label="File", menu=self.cascadeMenu)
         self.cascadeMenu.add_command(label="Uj letrehozasa")
         self.cascadeMenu.add_command(label="Mentes")
-        self.cascadeMenu.add_command(label="Betoltes")
+        self.cascadeMenu.add_command(label="Betoltes") #command=beolvasas
         self.cascadeMenu.add_separator()
         self.cascadeMenu.add_command(label="Kilepes", command=top.quit)
 
@@ -264,10 +305,12 @@ class Toplevel1:
         top.title("Csengetes")
         top.configure(background="#d9d9d9")
 
-        self.Button1 = tk.Button(top, command=szerkesztes)
-        self.Button1.place(relx=0.837, rely=0.318, height=24, width=67)
-        self.Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
-                                highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Szerkesztes')
+        # majd talan valamikor meg lesz csinalva ha kapok eleg penzt
+        #
+        # self.Button1 = tk.Button(top, command=szerkesztes)
+        # self.Button1.place(relx=0.837, rely=0.318, height=24, width=67)
+        # self.Button1.configure(activebackground="#ececec", activeforeground="#000000", background="#d9d9d9", disabledforeground="#a3a3a3", foreground="#000000", 
+        #                         highlightbackground="#d9d9d9", highlightcolor="black", pady="0", text='Szerkesztes')
 
         self.Button2 = tk.Button(top, command=letrehozas)
         self.Button2.place(relx=0.837, rely=0.451, height=24, width=67)
@@ -366,6 +409,51 @@ class Toplevel1:
             self.Scrolledlistbox5.insert(tk.END, erteP)
 
     def kivalTorol(self):
+        global elsoKiv
+        global masodikKiv
+        global harmadikKiv
+        global negyedikKiv
+        global otodikKiv
+
+        if(self.Scrolledlistbox1.get(tk.ANCHOR) != ""):
+            egy = self.Scrolledlistbox1.get(tk.ANCHOR).split(" ")
+            elsoKiv = "1" + ";" + "Hetfo" + ";" + egy[0] + ";" + egy[1]
+            print(elsoKiv)
+        elif(self.Scrolledlistbox2.get(tk.ANCHOR) != ""):
+            ketto = self.Scrolledlistbox2.get(tk.ANCHOR).split(" ")
+            masodikKiv = "2" + ";" + "Kedd" + ";" + ketto[0] + ";" + ketto[1]
+            print(masodikKiv)
+        elif(self.Scrolledlistbox3.get(tk.ANCHOR) != ""):
+            harom = self.Scrolledlistbox3.get(tk.ANCHOR).split(" ")
+            harmadikKiv = "3" + ";" + "Szerda" + ";" + harom[0] + ";" + harom[1]
+            print(harmadikKiv)
+        elif(self.Scrolledlistbox4.get(tk.ANCHOR) != ""):
+            negy = self.Scrolledlistbox4.get(tk.ANCHOR).split(" ")
+            negyedikKiv = "4" + ";" + "Csutortok" + ";" + negy[0] + ";" + negy[1]
+            print(negyedikKiv)
+        elif(self.Scrolledlistbox5.get(tk.ANCHOR) != ""):
+            ot = self.Scrolledlistbox5.get(tk.ANCHOR).split(" ")
+            otodikKiv = "5" + ";" + "Pentek" + ";" + ot[0] + ";" + ot[1]
+            print(otodikKiv)
+
+        output = []
+        with open(config, "r+") as f:
+            for line in f:
+                if not elsoKiv in line:
+                    output.append(line)
+                elif not masodikKiv in line:
+                    output.append(line)
+                elif not harmadikKiv in line:
+                    output.append(line)
+                elif not negyedikKiv in line:
+                    output.append(line)
+                elif not otodikKiv in line:
+                    output.append(line)
+
+            f.seek(0)
+            f.truncate()
+            f.writelines(output)
+
         self.Scrolledlistbox1.delete(tk.ANCHOR)
         self.Scrolledlistbox2.delete(tk.ANCHOR)
         self.Scrolledlistbox3.delete(tk.ANCHOR)
@@ -538,4 +626,3 @@ def threadingInditas():
 
 
 vp_start_gui()
-
