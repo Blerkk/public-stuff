@@ -111,7 +111,7 @@ def rendezes():
             y = x.split(":")
             z = y[0]
             q = y[1]
-            rendSor = lines[i][0] + ";" + lines[i][1] + ";" + lines[i][2] + ";" + z + ":" + q + "\n"
+            rendSor = lines[i][0] + ";" + lines[i][1] + ";" + lines[i][2] + ";" + z + ":" + q + "\n"            #z + ":" + q helyett lehet siman lines[i][3] is csak akkor nem tudok aszerint sort-olni mert szar, nem mintha igy tundnek 
             print(rendSor)
             rendezve.append(rendSor)
 
