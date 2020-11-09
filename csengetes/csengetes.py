@@ -104,6 +104,24 @@ def idoUpdate():
     elif(maiNap == "Friday"):
         maiNap = "Pentek"
 
+    # # Ezt mondjuk igy is lehetne sokkal szebben json file-al
+    # #
+    # [
+    #     {
+    #         "Monday": "Hétfő",
+    #         "Tuesday": "Kedd"
+    #         ...
+    #     }
+    # ]
+
+    # file = open('data.json', 'r')
+    # data = json.loads(file.read())[0]
+    # file.close()
+
+    # data[maiNap]
+    # #
+
+
 def rendezes():
     rendezve = list()
     with open(config, 'r+') as f:
